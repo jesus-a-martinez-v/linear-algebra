@@ -23,7 +23,7 @@ case class LinearSystem(planes: Plane*) {
     *         Equation n: Anx1 + Bnx2 + Cnx3 = kn
     */
   override def toString: String =
-    "Linear System:\n" + this.planes.zipWithIndex.map { case (p, i) => s"Equation $i: $p" }.mkString("\n")
+    "Linear System:\n" + planes.zipWithIndex.map { case (p, i) => s"Equation $i: $p" }.mkString("\n")
 
   // Swaps two rows and returns the new system.
   private def swapRows(firstRowIndex: Int, secondRowIndex: Int): LinearSystem = {
@@ -44,6 +44,7 @@ case class LinearSystem(planes: Plane*) {
     val row = multiplyCoefficientAndRow(coefficient, rowToAddIndex).get(rowToAddIndex)
     val oldRow = this.get(rowToBeAddedToIndex)
     val newRow = Plane(row.normalVector + oldRow.normalVector, row.constantTerm + oldRow.constantTerm)
+
     this.updated(rowToBeAddedToIndex, newRow)
   }
 

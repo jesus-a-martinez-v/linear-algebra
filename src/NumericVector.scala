@@ -6,7 +6,7 @@ case class NumericVector(coordinates: Double*) {
 
   private def tolerance = 1e-10
 
-  def apply(i: Int): Double = this.coordinates(i)
+  def apply(i: Int): Double = coordinates(i)
 
   /**
     * @return Number of elements of this vector.
@@ -23,20 +23,22 @@ case class NumericVector(coordinates: Double*) {
     * @param that Vector to be summed with `this`.
     * @return A new Vector that contains the sum, coordinate by coordinate, of `this` and `that`
     */
-  def + (that: NumericVector): NumericVector = if (that.dimension != dimension)
-    throw new Exception("Dimensions don't match")
-  else
+  def + (that: NumericVector): NumericVector = {
+    assert(that.dimension != dimension, "Dimensions don't match")
+
     NumericVector(coordinates zip that.coordinates map { case (a, b) => a + b }: _*)
+  }
 
   /**
     * Subtracts two vectors.
     * @param that Vector to be subtrated to `this`.
     * @return A new Vector that contains the subtraction, coordinate by coordinate, of `this` and `that`
     */
-  def - (that: NumericVector): NumericVector = if (that.dimension != dimension)
-    throw new Exception("Dimensions don't match")
-  else
+  def - (that: NumericVector): NumericVector = {
+    assert(that.dimension != dimension, "Dimensions don't match")
+
     NumericVector(coordinates zip that.coordinates map { case (a, b) => a - b }: _*)
+  }
 
   /**
     * Scalar product.
@@ -60,6 +62,13 @@ case class NumericVector(coordinates: Double*) {
   def * (scalar: Int): NumericVector = NumericVector(coordinates map (_ * scalar): _*)
 
   /**
+    * Scalar product.
+    * @param scalar Scalar to be multiplied with `this`
+    * @return A new Vector that contains the scalar product, coordinate by coordinate, of `this` and `scalar
+    */
+  def * (scalar: Long): NumericVector = NumericVector(coordinates map (_ * scalar): _*)
+
+  /**
     * Dot product of two vectors
     * @param that Vector to be dot multiplied with `this`
     * @return Quantity equals to the dot product of `this` and `that`
@@ -72,12 +81,11 @@ case class NumericVector(coordinates: Double*) {
     * @param radians Flag used to return the result in radians (true) or degrees (false). Defaults to true.
     * @return The angle between `this` and `that` in the units specified by `radians` flag.
     */
-  def angleWith(that: NumericVector, radians: Boolean = true): Double = (isZero, that.isZero) match {
-    case (true, _) | (_, true) =>
-      throw new Exception("Can't calculate angle with zero vector")
-    case _ =>
-      val inRadians = math.acos(this.normalized * that.normalized)
-      if (radians) inRadians else math.toDegrees(inRadians)
+  def angleWith(that: NumericVector, radians: Boolean = true): Double = {
+    assert(!this.isZero && !that.isZero, "Can't calculate angle with zero vector")
+
+    val inRadians = math.acos(this.normalized * that.normalized)
+    if (radians) inRadians else math.toDegrees(inRadians)
   }
 
   /**
@@ -88,21 +96,22 @@ case class NumericVector(coordinates: Double*) {
   /**
     * @return Quantity equals to the magnitude of `this`
     */
-  def magnitude = math.sqrt(this.coordinates.foldLeft(0.0)((a, c) => a + math.pow(c, 2)))
+  def magnitude = math.sqrt(coordinates.foldLeft(0.0)((a, c) => a + math.pow(c, 2)))
 
   /**
     * Calculates the normalized vector of `this`
     * @return A new vector that is equals to the normalized version of `this`
     */
-  def normalized: NumericVector =
-    if (isZero) throw new Exception("Zero vector has no normalized form")
-    else this * (1 / magnitude)
+  def normalized: NumericVector = {
+    assert(!isZero, "Zero vector has no normalized form")
+    this * (1 / magnitude)
+  }
 
   /**
     * Checks if two vectors are orthogonal to each other
     * @return True if `this` and `that` are orthogonal.
     */
-  def isOrthogonalTo(that: NumericVector) = isZero || (this * that < tolerance)
+  def isOrthogonalTo(that: NumericVector): Boolean = isZero || (this * that < tolerance)
 
   /**
     * Checks if two vectors are parallel.
@@ -133,15 +142,15 @@ case class NumericVector(coordinates: Double*) {
     * @param that Vector to be cross multiplied with `this`
     * @return A new Vector that is orthogonal to both `this` and `that `
     */
-  def x (that: NumericVector) =
-    if (dimension != 3 || that.dimension != 3)
-      throw new Exception("Cross product is only defined for 3D vectors.")
-    else
-      NumericVector(
-        this.coordinates(1) * that.coordinates(2) - that.coordinates(1) * this.coordinates(2),
-        that.coordinates(0) * this.coordinates(2) - this.coordinates(0) * that.coordinates(2),
-        this.coordinates(0) * that.coordinates(1) - that.coordinates(0) * this.coordinates(1)
-      )
+  def x (that: NumericVector) = {
+    assert(this.dimension == 3 && that.dimension == 3, "Cross product is only defined for 3D vectors.")
+
+    NumericVector(
+      this.coordinates(1) * that.coordinates(2) - that.coordinates(1) * this.coordinates(2),
+      that.coordinates(0) * this.coordinates(2) - this.coordinates(0) * that.coordinates(2),
+      this.coordinates(0) * that.coordinates(1) - that.coordinates(0) * this.coordinates(1)
+    )
+  }
 
   /**
     * Returns the area of the parallelogram formed by `this` and `that`
