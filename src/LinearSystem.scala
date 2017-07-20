@@ -39,7 +39,7 @@ case class LinearSystem(planes: Plane*) {
     this.updated(rowIndex, newRow)
   }
 
-  // Adds a now `coefficient` times to another and returns the new system.
+  // Adds a `coefficient` times to another and returns the new system.
   private def addMultipleTimesRowToRow(coefficient: Double, rowToAddIndex: Int, rowToBeAddedToIndex: Int): LinearSystem = {
     val row = multiplyCoefficientAndRow(coefficient, rowToAddIndex).get(rowToAddIndex)
     val oldRow = this.get(rowToBeAddedToIndex)
